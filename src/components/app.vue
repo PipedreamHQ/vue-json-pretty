@@ -51,8 +51,10 @@
           :selectable-type="selectableType"
           :show-select-controller="showSelectController"
           :select-on-click-node="selectOnClickNode"
+          :auto-expand-key="autoExpandKey"
           :current-key="key"
           :current-deep="currentDeep + 1"
+          :auto-expand="shouldAutoexpandChildren"
           @click="handleItemClick"
           @change="handleItemChange">
         </vue-json-pretty>
@@ -159,6 +161,7 @@
         type: Boolean,
         default: true
       },
+      autoExpandKey: String,
       /* outer props */
 
       /* inner props */
@@ -170,12 +173,16 @@
         default: 1
       },
       // 当前树的数据 data 为数组时 currentKey 表示索引, 为对象时表示键名
-      currentKey: [Number, String]
+      currentKey: [Number, String],
+      autoExpand: {
+        type: Boolean,
+        default: false
+      }
       /* outer props */
     },
     data () {
       return {
-        visible: this.currentDeep <= this.deep,
+        visible: (this.currentDeep <= this.deep) || (this.currentKey === this.autoExpandKey) || this.autoExpand,
         isMouseover: false,
         currentCheckboxVal: Array.isArray(this.value) ? this.value.includes(this.path) : false
       }
@@ -234,6 +241,10 @@
       propsError () {
         const error = this.selectableType && !this.selectOnClickNode && !this.showSelectController
         return error ? 'When selectableType is not null, selectOnClickNode and showSelectController cannot be false at the same time, because this will cause the selection to fail.' : ''
+      },
+
+      shouldAutoexpandChildren () {
+        return this.currentKey === this.autoExpandKey || this.autoExpand
       }
     },
     methods: {
